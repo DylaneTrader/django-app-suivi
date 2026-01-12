@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block login_content %}
+<div class="container-fluid">
+    <div class="row min-vh-100">
+        <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);">
+            <div class="text-white text-center">
+                <h1 class="display-3 fw-bold mb-4">
+                    <i class="bi bi-graph-up-arrow"></i><br>
+                    Suivi Collecte
+                </h1>
+                <p class="lead">Gérez vos opérations de collecte efficacement</p>
+            </div>
+        </div>
+        <div class="col-lg-6 d-flex align-items-center justify-content-center p-5">
+            <div class="w-100" style="max-width: 400px;">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold">Connexion</h2>
+                    <p class="text-muted">Accédez à votre espace de gestion</p>
+                </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control form-control-lg" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">Se connecter</button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        <strong>Comptes de test:</strong><br>
+                        Admin: admin / admin123<br>
+                        Commercial: commercial1 / commercial123
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

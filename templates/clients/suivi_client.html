@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Suivi Client{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" class="form-control" name="search" placeholder="Rechercher par nom, prénom ou email" value="{{ search }}">
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" name="type">
+                    <option value="">Tous les types</option>
+                    <option value="A" {% if type_filter == 'A' %}selected{% endif %}>Type A</option>
+                    <option value="B" {% if type_filter == 'B' %}selected{% endif %}>Type B</option>
+                    <option value="C" {% if type_filter == 'C' %}selected{% endif %}>Type C</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Rechercher
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Liste des clients</h5>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Type</th>
+                        <th>Commercial</th>
+                        <th>Opérations</th>
+                        <th>Montant total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        <td>{{ client.nom }}</td>
+                        <td>{{ client.prenom }}</td>
+                        <td>{{ client.email }}</td>
+                        <td>{{ client.telephone }}</td>
+                        <td>
+                            <span class="badge {% if client.type_client == 'A' %}bg-success{% elif client.type_client == 'B' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                Type {{ client.type_client }}
+                            </span>
+                        </td>
+                        <td>{{ client.commercial.get_full_name|default:'-' }}</td>
+                        <td>{{ client.total_operations|default:0 }}</td>
+                        <td><strong>{{ client.total_montant|default:0|floatformat:2 }}€</strong></td>
+                        <td>
+                            <a href="{% url 'clients:client_detail' client.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> Voir
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted">Aucun client trouvé</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
