@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value">{{ total_operations }}</div>
+            <div class="stat-label">Opérations totales</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value">{{ total_clients }}</div>
+            <div class="stat-label">Clients</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value">{{ weekly_total|floatformat:0 }}€</div>
+            <div class="stat-label">Hebdomadaire</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value">{{ monthly_total|floatformat:0 }}€</div>
+            <div class="stat-label">Mensuel</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Évolution des montants (6 derniers mois)</h5>
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Opérations par type</h5>
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Operations Table -->
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Opérations récentes</h5>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Type</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
+                        <th>Créé par</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for op in recent_operations %}
+                    <tr>
+                        <td>{{ op.date_operation|date:"d/m/Y" }}</td>
+                        <td>{{ op.client.full_name }}</td>
+                        <td><span class="badge bg-info">{{ op.get_type_operation_display }}</span></td>
+                        <td><strong>{{ op.montant }}€</strong></td>
+                        <td>
+                            {% if op.status == 'terminee' %}
+                            <span class="badge bg-success">{{ op.get_status_display }}</span>
+                            {% elif op.status == 'en_cours' %}
+                            <span class="badge bg-warning">{{ op.get_status_display }}</span>
+                            {% elif op.status == 'annulee' %}
+                            <span class="badge bg-danger">{{ op.get_status_display }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ op.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ op.created_by.get_full_name|default:op.created_by.username }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Aucune opération</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Monthly Chart
+const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+const monthlyData = {{ monthly_data|safe }};
+new Chart(monthlyCtx, {
+    type: 'line',
+    data: {
+        labels: monthlyData.map(d => d.month),
+        datasets: [{
+            label: 'Montant (€)',
+            data: monthlyData.map(d => d.total),
+            borderColor: '#1e3a8a',
+            backgroundColor: 'rgba(30, 58, 138, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+// Type Chart  
+const typeCtx = document.getElementById('typeChart').getContext('2d');
+const typeData = {{ operations_by_type|safe }};
+new Chart(typeCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Collecte', 'Dépôt', 'Retrait'],
+        datasets: [{
+            data: [
+                typeData.find(t => t.type_operation === 'collecte')?.count || 0,
+                typeData.find(t => t.type_operation === 'depot')?.count || 0,
+                typeData.find(t => t.type_operation === 'retrait')?.count || 0
+            ],
+            backgroundColor: ['#1e3a8a', '#3b82f6', '#93c5fd']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+</script>
+{% endblock %}
